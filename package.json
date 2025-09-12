@@ -1,0 +1,29 @@
+{
+  "name": "weather",
+  "version": "2.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest tests/basic.test.js",
+    "test:watch": "jest tests/basic.test.js --watch",
+    "test:coverage": "jest tests/basic.test.js --coverage",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.3.1",
+    "@types/supertest": "^6.0.3",
+    "jest": "^30.1.3",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.2"
+  }
+}
