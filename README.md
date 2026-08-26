@@ -66,7 +66,7 @@ Add this configuration to your Claude Desktop config file:
     "kaushik-weather": {
       "command": "node",
       "args": [
-        "c:/Workholic/LawSikho/POCs/weather/weather/build/index.js"
+        "z:/yourPathToProject/weather/build/index.js"
       ]
     }
   }
