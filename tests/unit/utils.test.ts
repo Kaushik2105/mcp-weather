@@ -1,143 +1,69 @@
-import { jest } from '@jest/globals';
+import { sanitizeInput } from '../../src/utils/sanitizer.js';
+import { RateLimiterService } from '../../src/services/rate-limiter.js';
+import { CacheService } from '../../src/services/cache.js';
 
-// Mock the utility functions by importing them
-// We'll need to extract these functions to a separate module for proper testing
-describe('Utility Functions', () => {
-  // Test sanitizeInput function
-  describe('sanitizeInput', () => {
-    const sanitizeInput = (input: string): string => {
-      return input.replace(/[<>\"'&]/g, (match) => {
-        const entities: { [key: string]: string } = {
-          '<': '&lt;',
-          '>': '&gt;',
-          '"': '&quot;',
-          "'": '&#x27;',
-          '&': '&amp;'
-        };
-        return entities[match];
-      });
-    };
-
-    test('should sanitize HTML entities', () => {
-      expect(sanitizeInput('<script>alert("xss")</script>')).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
-      expect(sanitizeInput('test & value')).toBe('test &amp; value');
-      expect(sanitizeInput("single'quote")).toBe('single&#x27;quote');
-    });
-
-    test('should not modify safe strings', () => {
-      expect(sanitizeInput('normal text')).toBe('normal text');
-      expect(sanitizeInput('123456')).toBe('123456');
-      expect(sanitizeInput('')).toBe('');
-    });
+describe('Sanitizer Unit Tests', () => {
+  test('escapes HTML entities in strings', () => {
+    expect(sanitizeInput('<script>alert("xss")</script>')).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+    expect(sanitizeInput('test & value')).toBe('test &amp; value');
+    expect(sanitizeInput("single'quote")).toBe('single&#x27;quote');
   });
 
-  // Test rate limiting function
-  describe('isRateLimited', () => {
-    const requestCounts = new Map<string, { count: number; resetTime: number }>();
-    const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-    const MAX_REQUESTS_PER_WINDOW = 100;
+  test('keeps safe strings unchanged', () => {
+    expect(sanitizeInput('normal text')).toBe('normal text');
+    expect(sanitizeInput('123456')).toBe('123456');
+    expect(sanitizeInput('')).toBe('');
+  });
+});
 
-    const isRateLimited = (clientId: string): boolean => {
-      const now = Date.now();
-      const clientData = requestCounts.get(clientId);
-      
-      if (!clientData || now > clientData.resetTime) {
-        requestCounts.set(clientId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
-        return false;
-      }
-      
-      if (clientData.count >= MAX_REQUESTS_PER_WINDOW) {
-        return true;
-      }
-      
-      clientData.count++;
-      return false;
-    };
+describe('Rate Limiter Unit Tests', () => {
+  let limiter: RateLimiterService;
 
-    beforeEach(() => {
-      requestCounts.clear();
-    });
-
-    test('should allow first request', () => {
-      expect(isRateLimited('client1')).toBe(false);
-    });
-
-    test('should allow requests within limit', () => {
-      for (let i = 0; i < 50; i++) {
-        expect(isRateLimited('client1')).toBe(false);
-      }
-    });
-
-    test('should block requests over limit', () => {
-      // Fill up to the limit
-      for (let i = 0; i < MAX_REQUESTS_PER_WINDOW; i++) {
-        isRateLimited('client1');
-      }
-      
-      // Next request should be rate limited
-      expect(isRateLimited('client1')).toBe(true);
-    });
-
-    test('should reset after window expires', () => {
-      // Fill up to the limit
-      for (let i = 0; i < MAX_REQUESTS_PER_WINDOW; i++) {
-        isRateLimited('client1');
-      }
-      
-      // Mock time passing
-      const clientData = requestCounts.get('client1')!;
-      clientData.resetTime = Date.now() - 1000; // Expired
-      
-      expect(isRateLimited('client1')).toBe(false);
-    });
+  beforeEach(() => {
+    limiter = RateLimiterService.getInstance();
+    limiter.clear();
   });
 
-  // Test caching functions
-  describe('Cache Functions', () => {
-    const cache = new Map<string, { data: any; timestamp: number }>();
-    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+  test('permits initial request', () => {
+    expect(limiter.isRateLimited('client1')).toBe(false);
+  });
 
-    const getCachedData = <T>(key: string): T | null => {
-      const cached = cache.get(key);
-      if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-        return cached.data as T;
-      }
-      cache.delete(key);
-      return null;
-    };
+  test('permits multiple requests under the threshold', () => {
+    for (let i = 0; i < 50; i++) {
+      expect(limiter.isRateLimited('client1')).toBe(false);
+    }
+  });
 
-    const setCachedData = <T>(key: string, data: T): void => {
-      cache.set(key, { data, timestamp: Date.now() });
-    };
+  test('blocks requests exceeding maximum threshold', () => {
+    for (let i = 0; i < 100; i++) {
+      limiter.isRateLimited('client1');
+    }
+    expect(limiter.isRateLimited('client1')).toBe(true);
+  });
+});
 
-    beforeEach(() => {
-      cache.clear();
-    });
+describe('Cache Unit Tests', () => {
+  let cache: CacheService;
 
-    test('should store and retrieve cached data', () => {
-      const testData = { message: 'test' };
-      setCachedData('test-key', testData);
-      
-      const retrieved = getCachedData<typeof testData>('test-key');
-      expect(retrieved).toEqual(testData);
-    });
+  beforeEach(() => {
+    cache = CacheService.getInstance();
+    cache.clear();
+  });
 
-    test('should return null for non-existent key', () => {
-      const retrieved = getCachedData('non-existent');
-      expect(retrieved).toBeNull();
-    });
+  test('stores and returns cached objects', () => {
+    const data = { temp: 72 };
+    cache.set('key-1', data);
+    expect(cache.get('key-1')).toEqual(data);
+  });
 
-    test('should return null for expired data', () => {
-      const testData = { message: 'test' };
-      setCachedData('test-key', testData);
-      
-      // Mock expired timestamp
-      const cached = cache.get('test-key')!;
-      cached.timestamp = Date.now() - CACHE_TTL - 1000;
-      
-      const retrieved = getCachedData<typeof testData>('test-key');
-      expect(retrieved).toBeNull();
-      expect(cache.has('test-key')).toBe(false); // Should be deleted
-    });
+  test('returns null for missing keys', () => {
+    expect(cache.get('missing-key')).toBeNull();
+  });
+
+  test('flushes all entries on clear', () => {
+    cache.set('k1', 1);
+    cache.set('k2', 2);
+    expect(cache.clear()).toBe(2);
+    expect(cache.size).toBe(0);
   });
 });

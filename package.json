@@ -3,10 +3,11 @@
   "version": "2.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "jest tests/basic.test.js",
-    "test:watch": "jest tests/basic.test.js --watch",
-    "test:coverage": "jest tests/basic.test.js --coverage",
-    "build": "tsc"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "build": "tsc",
+    "start": "node build/index.js"
   },
   "keywords": ["mcp", "weather", "model-context-protocol", "claude"],
   "type": "module",
