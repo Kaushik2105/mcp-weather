@@ -1,4 +1,4 @@
-# 🌤️ Kaushik's Weather MCP Server (v2.0.0)
+# 🌤️ Kaushik's Weather MCP Server 
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
 [![Model Context Protocol](https://img.shields.io/badge/MCP-1.18.0-purple.svg)](https://modelcontextprotocol.io/)
