@@ -8,11 +8,11 @@
     "test:coverage": "jest tests/basic.test.js --coverage",
     "build": "tsc"
   },
-  "keywords": [],
+  "keywords": ["mcp", "weather", "model-context-protocol", "claude"],
   "type": "module",
-  "author": "",
+  "author": "Kaushik Karmakar",
   "license": "ISC",
-  "description": "",
+  "description": "Kaushik's Weather MCP Server - Real-time weather forecasts and severe alerts for LLMs",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.0",
     "zod": "^3.25.76"

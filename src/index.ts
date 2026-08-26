@@ -196,10 +196,12 @@ interface ForecastResponse {
   };
 }
 
+const BRAND_SIGNATURE = "🛰️ [Fetched directly from Kaushik's MCP Weather Project (v2.0.0)]";
+
 // Register weather tools
 server.tool(
   "get_alerts",
-  "Get weather alerts for a state",
+  "Get weather alerts for a state (Provided by Kaushik's MCP Weather Service)",
   {
     state: z.string().length(2).describe("Two-letter state code (e.g. CA, NY)"),
   },
@@ -213,7 +215,7 @@ server.tool(
         content: [
           {
             type: "text",
-            text: "Rate limit exceeded. Please try again later.",
+            text: `${BRAND_SIGNATURE}\nRate limit exceeded. Please try again later.`,
           },
         ],
       };
@@ -234,13 +236,13 @@ server.tool(
             content: [
               {
                 type: "text",
-                text: `No active alerts for ${sanitizedState}`,
+                text: `${BRAND_SIGNATURE}\n[⚡ Cache Hit] No active alerts for ${sanitizedState}`,
               },
             ],
           };
         }
         const formattedAlerts = features.map(formatAlert);
-        const alertsText = `Active alerts for ${sanitizedState}:\n\n${formattedAlerts.join("\n")}`;
+        const alertsText = `${BRAND_SIGNATURE}\n[⚡ Cache Hit] Active alerts for ${sanitizedState}:\n\n${formattedAlerts.join("\n")}`;
         return {
           content: [
             {
@@ -261,7 +263,7 @@ server.tool(
           content: [
             {
               type: "text",
-              text: "Failed to retrieve alerts data. Please try again later.",
+              text: `${BRAND_SIGNATURE}\nFailed to retrieve alerts data. Please try again later.`,
             },
           ],
         };
@@ -277,14 +279,14 @@ server.tool(
           content: [
             {
               type: "text",
-              text: `No active alerts for ${sanitizedState}`,
+              text: `${BRAND_SIGNATURE}\nNo active alerts for ${sanitizedState}`,
             },
           ],
         };
       }
 
       const formattedAlerts = features.map(formatAlert);
-      const alertsText = `Active alerts for ${sanitizedState}:\n\n${formattedAlerts.join("\n")}`;
+      const alertsText = `${BRAND_SIGNATURE}\nActive alerts for ${sanitizedState}:\n\n${formattedAlerts.join("\n")}`;
 
       return {
         content: [
@@ -300,7 +302,7 @@ server.tool(
         content: [
           {
             type: "text",
-            text: "An error occurred while retrieving alerts data. Please try again later.",
+            text: `${BRAND_SIGNATURE}\nAn error occurred while retrieving alerts data. Please try again later.`,
           },
         ],
       };
@@ -310,7 +312,7 @@ server.tool(
 
 server.tool(
   "get_forecast",
-  "Get weather forecast for a location",
+  "Get weather forecast for a location (Provided by Kaushik's MCP Weather Service)",
   {
     latitude: z.number().min(-90).max(90).describe("Latitude of the location"),
     longitude: z
@@ -329,7 +331,7 @@ server.tool(
         content: [
           {
             type: "text",
-            text: "Rate limit exceeded. Please try again later.",
+            text: `${BRAND_SIGNATURE}\nRate limit exceeded. Please try again later.`,
           },
         ],
       };
@@ -351,7 +353,7 @@ server.tool(
             content: [
               {
                 type: "text",
-                text: "No forecast periods available",
+                text: `${BRAND_SIGNATURE}\n[⚡ Cache Hit] No forecast periods available for ${lat}, ${lon}`,
               },
             ],
           };
@@ -365,7 +367,7 @@ server.tool(
             "---",
           ].join("\n"),
         );
-        const forecastText = `Forecast for ${lat}, ${lon}:\n\n${formattedForecast.join("\n")}`;
+        const forecastText = `${BRAND_SIGNATURE}\n[⚡ Cache Hit] Forecast for ${lat}, ${lon}:\n\n${formattedForecast.join("\n")}`;
         return {
           content: [
             {
@@ -388,7 +390,7 @@ server.tool(
           content: [
             {
               type: "text",
-              text: `Failed to retrieve grid point data for coordinates: ${lat}, ${lon}. This location may not be supported by the NWS API (only US locations are supported).`,
+              text: `${BRAND_SIGNATURE}\nFailed to retrieve grid point data for coordinates: ${lat}, ${lon}. This location may not be supported by the NWS API (only US locations are supported).`,
             },
           ],
         };
@@ -401,7 +403,7 @@ server.tool(
           content: [
             {
               type: "text",
-              text: "Failed to get forecast URL from grid point data",
+              text: `${BRAND_SIGNATURE}\nFailed to get forecast URL from grid point data`,
             },
           ],
         };
@@ -415,7 +417,7 @@ server.tool(
           content: [
             {
               type: "text",
-              text: "Failed to retrieve forecast data. Please try again later.",
+              text: `${BRAND_SIGNATURE}\nFailed to retrieve forecast data. Please try again later.`,
             },
           ],
         };
@@ -431,7 +433,7 @@ server.tool(
           content: [
             {
               type: "text",
-              text: "No forecast periods available",
+              text: `${BRAND_SIGNATURE}\nNo forecast periods available for ${lat}, ${lon}`,
             },
           ],
         };
@@ -448,7 +450,7 @@ server.tool(
         ].join("\n"),
       );
 
-      const forecastText = `Forecast for ${lat}, ${lon}:\n\n${formattedForecast.join("\n")}`;
+      const forecastText = `${BRAND_SIGNATURE}\nForecast for ${lat}, ${lon}:\n\n${formattedForecast.join("\n")}`;
 
       return {
         content: [
@@ -464,7 +466,7 @@ server.tool(
         content: [
           {
             type: "text",
-            text: "An error occurred while retrieving forecast data. Please try again later.",
+            text: `${BRAND_SIGNATURE}\nAn error occurred while retrieving forecast data. Please try again later.`,
           },
         ],
       };
@@ -475,7 +477,7 @@ server.tool(
 // Health check tool
 server.tool(
   "health_check",
-  "Check server health and status",
+  "Check server health and status (Provided by Kaushik's MCP Weather Service)",
   {},
   async () => {
     const now = Date.now();
@@ -497,6 +499,7 @@ server.tool(
     }
 
     const healthData = {
+      server: "Kaushik's Weather MCP Server",
       status: "healthy",
       timestamp: new Date().toISOString(),
       version: "2.0.0",
@@ -525,7 +528,7 @@ server.tool(
       content: [
         {
           type: "text",
-          text: `Weather MCP Server Health Check\n\n${JSON.stringify(healthData, null, 2)}`,
+          text: `${BRAND_SIGNATURE}\n🩺 Health Check Status\n\n${JSON.stringify(healthData, null, 2)}`,
         },
       ],
     };
@@ -535,7 +538,7 @@ server.tool(
 // Cache management tool
 server.tool(
   "clear_cache",
-  "Clear the response cache",
+  "Clear the response cache (Provided by Kaushik's MCP Weather Service)",
   {},
   async () => {
     const cacheSize = cache.size;
@@ -547,7 +550,7 @@ server.tool(
       content: [
         {
           type: "text",
-          text: `Cache cleared successfully. Previous cache size: ${cacheSize} entries.`,
+          text: `${BRAND_SIGNATURE}\nCache cleared successfully. Previous cache size: ${cacheSize} entries.`,
         },
       ],
     };
@@ -557,11 +560,12 @@ server.tool(
 // Metrics tool
 server.tool(
   "get_metrics",
-  "Get server performance metrics",
+  "Get server performance metrics (Provided by Kaushik's MCP Weather Service)",
   {},
   async () => {
     const now = Date.now();
     const metrics = {
+      server: "Kaushik's Weather MCP Server",
       timestamp: new Date().toISOString(),
       cache: {
         size: cache.size,
@@ -583,7 +587,7 @@ server.tool(
       content: [
         {
           type: "text",
-          text: `Server Metrics\n\n${JSON.stringify(metrics, null, 2)}`,
+          text: `${BRAND_SIGNATURE}\n📊 Server Metrics\n\n${JSON.stringify(metrics, null, 2)}`,
         },
       ],
     };
