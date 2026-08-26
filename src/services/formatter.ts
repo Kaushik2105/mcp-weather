@@ -6,7 +6,7 @@ export function createBulletinHeader(title: string, target: string, isCacheHit =
   return [
     "======================================================================",
     `🌦️ KAUSHIK WEATHER SERVICE - ${title.toUpperCase()}${cacheTag}`,
-    "• Provider: Kaushik's Weather MCP Server (v2.0.0)",
+    "• Provider: Kaushik's Weather MCP Server",
     "• Data Authority: National Weather Service (NOAA/NWS)",
     `• Target: ${target}`,
     `• Timestamp: ${new Date().toISOString()}`,
@@ -19,7 +19,7 @@ export function createBulletinFooter(): string {
   return [
     "",
     "======================================================================",
-    "📡 Issued by Kaushik's Weather MCP Server (v2.0.0)",
+    "📡 Issued by Kaushik's Weather MCP Server",
     "======================================================================",
   ].join("\n");
 }
